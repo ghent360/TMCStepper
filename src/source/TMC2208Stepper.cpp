@@ -109,6 +109,8 @@ uint64_t _sendDatagram(SERIAL_TYPE &serPtr, uint8_t datagram[], const uint8_t le
 	} while (sync != sync_target);
 
 	uint64_t out = sync;
+	ms = millis();
+	timeout = TMC2208Stepper::abort_window;
 
 	for(uint8_t i=0; i<5;) {
 		uint32_t ms2 = millis();

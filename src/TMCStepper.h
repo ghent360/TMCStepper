@@ -904,6 +904,9 @@ class TMC2208Stepper : public TMCStepper {
 		static constexpr uint8_t replyDelay = 5;
 		static constexpr uint8_t abort_window = 30;
 		static constexpr uint8_t max_retries = 3;
+
+		template<typename SERIAL_TYPE>
+		friend uint64_t _sendDatagram(SERIAL_TYPE &serPtr, uint8_t datagram[], const uint8_t len, uint16_t timeout);
 };
 
 class TMC2224Stepper : public TMC2208Stepper {

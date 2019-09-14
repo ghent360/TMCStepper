@@ -23,6 +23,10 @@
 	#include <SoftwareSerial.h>
 #endif
 
+#ifdef TMC_SERIAL_SWITCH
+	#include "source/SERIAL_SWITCH.h"
+#endif
+
 #include "source/SW_SPI.h"
 
 #pragma GCC diagnostic pop
@@ -45,7 +49,7 @@
 #define INIT2224_REGISTER(REG) TMC2224_n::REG##_t REG##_register = TMC2224_n::REG##_t
 #define SET_ALIAS(TYPE, DRIVER, NEW, ARG, OLD) TYPE (DRIVER::*NEW)(ARG) = &DRIVER::OLD
 
-#define TMCSTEPPER_VERSION 0x000406 // v0.4.6
+#define TMCSTEPPER_VERSION 0x000500 // v0.5.0
 
 class TMCStepper {
 	public:
@@ -647,7 +651,6 @@ class TMC5130Stepper : public TMC2160Stepper {
 		INIT_REGISTER(VSTOP){.sr=0};
 		INIT_REGISTER(TZEROWAIT){.sr=0};
 		INIT_REGISTER(SW_MODE){{.sr=0}};
-		INIT_REGISTER(RAMP_STAT){{.sr=0}};
 		INIT_REGISTER(ENCMODE){{.sr=0}};
 		INIT_REGISTER(ENC_CONST){.sr=0};
 
@@ -807,7 +810,10 @@ class TMC5161Stepper : public TMC5160Stepper {
 
 class TMC2208Stepper : public TMCStepper {
 	public:
-		TMC2208Stepper(Stream * SerialPort, float RS, bool has_rx=true) :
+	  #ifdef TMC_SERIAL_SWITCH
+	    TMC2208Stepper(Stream * SerialPort, float RS, uint8_t addr, uint16_t mul_pin1, uint16_t mul_pin2);
+	  #endif
+		TMC2208Stepper(Stream * SerialPort, float RS, bool) :
 			TMC2208Stepper(SerialPort, RS, TMC2208_SLAVE_ADDR)
 			{}
 		#if SW_CAPABLE_PLATFORM
@@ -818,7 +824,9 @@ class TMC2208Stepper : public TMCStepper {
 		void defaults();
 		void push();
 		void begin();
+		#if SW_CAPABLE_PLATFORM
 		void beginSerial(uint32_t baudrate);
+		#endif
 		bool isEnabled();
 
 		// RW: GCONF
@@ -980,6 +988,10 @@ class TMC2208Stepper : public TMCStepper {
 		#if SW_CAPABLE_PLATFORM
 			SoftwareSerial * SWSerial = NULL;
 		#endif
+
+		#ifdef TMC_SERIAL_SWITCH
+      	    SSwitch *sswitch = NULL;
+    	#endif
 
 		void write(uint8_t, uint32_t);
 		uint32_t read(uint8_t);

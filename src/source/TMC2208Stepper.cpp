@@ -129,19 +129,18 @@ void TMC2208Stepper::write(uint8_t addr, uint32_t regVal) {
 				bytesWritten += HWSerial->write(datagram[i]);
 		}
 	}
-	delay(replyDelay);
 }
 
 template<typename SERIAL_TYPE>
 uint64_t _sendDatagram(SERIAL_TYPE &serPtr, uint8_t datagram[], const uint8_t len, uint16_t timeout) {
 	while (serPtr.available() > 0) serPtr.read(); // Flush
 	for(int i=0; i<=len; i++) serPtr.write(datagram[i]);
-	delay(TMC2208Stepper::replyDelay);
+	int16_t res = serPtr.read();
 
 	// scan for the rx frame and read it
 	uint32_t ms = millis();
 	uint32_t sync_target = ((uint32_t)datagram[0]<<16) | 0xFF00 | datagram[2];
-	uint32_t sync = 0;
+	uint32_t sync = (res > 0) ? res : 0;
 
 	do {
 		uint32_t ms2 = millis();

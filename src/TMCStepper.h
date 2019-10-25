@@ -23,10 +23,7 @@
 	#include <SoftwareSerial.h>
 #endif
 
-#ifdef TMC_SERIAL_SWITCH
-	#include "source/SERIAL_SWITCH.h"
-#endif
-
+#include "source/SERIAL_SWITCH.h"
 #include "source/SW_SPI.h"
 
 #pragma GCC diagnostic pop
@@ -49,7 +46,7 @@
 #define INIT2224_REGISTER(REG) TMC2224_n::REG##_t REG##_register = TMC2224_n::REG##_t
 #define SET_ALIAS(TYPE, DRIVER, NEW, ARG, OLD) TYPE (DRIVER::*NEW)(ARG) = &DRIVER::OLD
 
-#define TMCSTEPPER_VERSION 0x000501 // v0.5.1
+#define TMCSTEPPER_VERSION 0x000502 // v0.5.2
 
 class TMCStepper {
 	public:
@@ -616,8 +613,8 @@ class TMC5130Stepper : public TMC2160Stepper {
 		int32_t X_ENC();
 		void X_ENC(int32_t input);
 		// W: ENC_CONST
-		uint16_t ENC_CONST();
-		void ENC_CONST(uint16_t input);
+		uint32_t ENC_CONST();
+		void ENC_CONST(uint32_t input);
 		// R: ENC_STATUS
 		bool ENC_STATUS();
 		// R: ENC_LATCH
@@ -810,10 +807,8 @@ class TMC5161Stepper : public TMC5160Stepper {
 
 class TMC2208Stepper : public TMCStepper {
 	public:
-	  #ifdef TMC_SERIAL_SWITCH
 	    TMC2208Stepper(Stream * SerialPort, float RS, uint8_t addr, uint16_t mul_pin1, uint16_t mul_pin2);
-	  #endif
-		TMC2208Stepper(Stream * SerialPort, float RS, bool) :
+		TMC2208Stepper(Stream * SerialPort, float RS) :
 			TMC2208Stepper(SerialPort, RS, TMC2208_SLAVE_ADDR)
 			{}
 		#if SW_CAPABLE_PLATFORM
@@ -989,9 +984,7 @@ class TMC2208Stepper : public TMCStepper {
 			SoftwareSerial * SWSerial = NULL;
 		#endif
 
-		#ifdef TMC_SERIAL_SWITCH
-      	    SSwitch *sswitch = NULL;
-    	#endif
+		SSwitch *sswitch = NULL;
 
 		void write(uint8_t, uint32_t);
 		uint32_t read(uint8_t);
@@ -1014,8 +1007,8 @@ class TMC2209Stepper : public TMC2208Stepper {
 			TMC2208Stepper(SerialPort, RS, addr) {}
 
 		#if SW_CAPABLE_PLATFORM
-			TMC2209Stepper(uint16_t SW_RX_pin, uint16_t SW_TX_pin, float RS, uint8_t addr) :
-				TMC2208Stepper(SW_RX_pin, SW_TX_pin, RS, addr, SW_RX_pin != SW_TX_pin) {}
+			TMC2209Stepper(uint16_t SW_RX_pin, uint16_t SW_TX_pin, float RS, uint8_t addr, bool has_rx = true) :
+				TMC2208Stepper(SW_RX_pin, SW_TX_pin, RS, addr, has_rx) {}
 		#endif
 		void push();
 

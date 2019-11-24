@@ -34,6 +34,12 @@ TMC2208Stepper::TMC2208Stepper(Stream * SerialPort, float RS, uint8_t addr, uint
 
 	void TMC2208Stepper::beginSerial(uint32_t baudrate) {
 		if (SWSerial != NULL) SWSerial->begin(baudrate);
+		#if defined(ARDUINO_ARCH_AVR)
+			if (RXTX_pin > 0) {
+				digitalWrite(RXTX_pin, HIGH);
+				pinMode(RXTX_pin, OUTPUT);
+			}
+		#endif
 	}
 #endif
 
@@ -125,16 +131,19 @@ template<typename SERIAL_TYPE>
 uint64_t TMC2208Stepper::_sendDatagram(SERIAL_TYPE &serPtr, uint8_t datagram[], const uint8_t len, uint16_t timeout) {
 	while (serPtr.available() > 0) serPtr.read(); // Flush
 
-	#if SW_CAPABLE_PLATFORM
-		if (RXTX_pin > 0)
+	#if defined(ARDUINO_ARCH_AVR)
+		if (RXTX_pin > 0) {
+			digitalWrite(RXTX_pin, HIGH);
 			pinMode(RXTX_pin, OUTPUT);
+		}
 	#endif
 
 	for(int i=0; i<=len; i++) serPtr.write(datagram[i]);
 
-	#if SW_CAPABLE_PLATFORM
-		if (RXTX_pin > 0)
-			pinMode(RXTX_pin, INPUT);
+	#if defined(ARDUINO_ARCH_AVR)
+		if (RXTX_pin > 0) {
+			pinMode(RXTX_pin, INPUT_PULLUP);
+		}
 	#endif
 
 	delay(TMC2208Stepper::replyDelay);
@@ -184,7 +193,15 @@ uint64_t TMC2208Stepper::_sendDatagram(SERIAL_TYPE &serPtr, uint8_t datagram[], 
 		i++;
 	}
 
+	#if defined(ARDUINO_ARCH_AVR)
+		if (RXTX_pin > 0) {
+			digitalWrite(RXTX_pin, HIGH);
+			pinMode(RXTX_pin, OUTPUT);
+		}
+	#endif
+
 	while (serPtr.available() > 0) serPtr.read(); // Flush
+
 	return out;
 }
 

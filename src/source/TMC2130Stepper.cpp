@@ -66,7 +66,7 @@ uint32_t TMC2130Stepper::read(uint8_t addressByte) {
   uint32_t out = 0UL;
   int8_t i = 1;
 
-  if (TMC_SW_SPI != NULL) {
+  if (TMC_SW_SPI != nullptr) {
     switchCSpin(LOW);
     TMC_SW_SPI->transfer(addressByte & 0xFF);
     TMC_SW_SPI->transfer16(0x0000); // Clear SPI
@@ -148,7 +148,7 @@ uint32_t TMC2130Stepper::read(uint8_t addressByte) {
 void TMC2130Stepper::write(uint8_t addressByte, uint32_t config) {
   addressByte |= TMC_WRITE;
   int8_t i = 1;
-  if (TMC_SW_SPI != NULL) {
+  if (TMC_SW_SPI != nullptr) {
     switchCSpin(LOW);
     status_response = TMC_SW_SPI->transfer(addressByte & 0xFF);
     TMC_SW_SPI->transfer16((config>>16) & 0xFFFF);
@@ -188,7 +188,7 @@ void TMC2130Stepper::begin() {
   pinMode(_pinCS, OUTPUT);
   switchCSpin(HIGH);
 
-  if (TMC_SW_SPI != NULL) TMC_SW_SPI->init();
+  if (TMC_SW_SPI != nullptr) TMC_SW_SPI->init();
 
   GCONF(GCONF_register.sr);
   CHOPCONF(CHOPCONF_register.sr);
@@ -249,8 +249,7 @@ void TMC2130Stepper::THIGH(uint32_t input) {
 ///////////////////////////////////////////////////////////////////////////////////////
 // RW: XDIRECT
 uint32_t TMC2130Stepper::XDIRECT() {
-  XDIRECT_register.sr = read(XDIRECT_register.address);
-  return XDIRECT_register.sr;
+  return read(XDIRECT_register.address);
 }
 void TMC2130Stepper::XDIRECT(uint32_t input) {
   XDIRECT_register.sr = input;
@@ -258,8 +257,8 @@ void TMC2130Stepper::XDIRECT(uint32_t input) {
 }
 void TMC2130Stepper::coil_A(int16_t B)  { XDIRECT_register.coil_A = B; write(XDIRECT_register.address, XDIRECT_register.sr); }
 void TMC2130Stepper::coil_B(int16_t B)  { XDIRECT_register.coil_B = B; write(XDIRECT_register.address, XDIRECT_register.sr); }
-int16_t TMC2130Stepper::coil_A()        { XDIRECT(); return XDIRECT_register.coil_A; }
-int16_t TMC2130Stepper::coil_B()        { XDIRECT(); return XDIRECT_register.coil_B; }
+int16_t TMC2130Stepper::coil_A()        { XDIRECT_t r{0}; r.sr = XDIRECT(); return r.coil_A; }
+int16_t TMC2130Stepper::coil_B()        { XDIRECT_t r{0}; r.sr = XDIRECT(); return r.coil_B; }
 ///////////////////////////////////////////////////////////////////////////////////////
 // W: VDCMIN
 uint32_t TMC2130Stepper::VDCMIN() { return VDCMIN_register.sr; }
@@ -283,16 +282,17 @@ void TMC2130Stepper::dc_sg(uint8_t input) {
 }
 
 uint32_t TMC2130Stepper::DCCTRL() {
-	DCCTRL_register.sr = read(DCCTRL_register.address);
-	return DCCTRL_register.sr;
+	return read(DCCTRL_register.address);
 }
 uint16_t TMC2130Stepper::dc_time() {
-	DCCTRL();
-	return DCCTRL_register.dc_time;
+	DCCTRL_t r{0};
+  r.sr = DCCTRL();
+	return r.dc_time;
 }
 uint8_t TMC2130Stepper::dc_sg() {
-	DCCTRL();
-	return DCCTRL_register.dc_sg;
+	DCCTRL_t r{0};
+  r.sr = DCCTRL();
+	return r.dc_sg;
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 // R: PWM_SCALE

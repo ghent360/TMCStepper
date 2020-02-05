@@ -823,7 +823,6 @@ class TMC2208Stepper : public TMCStepper {
 		void push();
 		void begin();
 		#if SW_CAPABLE_PLATFORM
-		void beginSerial(uint32_t baudrate);
 			void beginSerial(uint32_t baudrate);
 		#else
 			void beginSerial(uint32_t) = delete; // Your platform does not currently support Software Serial

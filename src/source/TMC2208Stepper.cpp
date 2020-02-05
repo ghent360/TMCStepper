@@ -128,7 +128,6 @@ void TMC2208Stepper::write(uint8_t addr, uint32_t regVal) {
 				bytesWritten += HWSerial->write(datagram[i]);
 		}
 	}
-	delay(replyDelay);
 }
 
 template<typename SERIAL_TYPE>
@@ -149,8 +148,6 @@ uint64_t TMC2208Stepper::_sendDatagram(SERIAL_TYPE &serPtr, uint8_t datagram[], 
 			pinMode(RXTX_pin, INPUT_PULLUP);
 		}
 	#endif
-
-	delay(this->replyDelay);
 
 	// scan for the rx frame and read it
 	uint32_t ms = millis();
@@ -230,8 +227,6 @@ uint32_t TMC2208Stepper::read(uint8_t addr) {
 
 				out = _sendDatagram(*HWSerial, datagram, len, abort_window);
 			}
-
-		delay(replyDelay);
 
 		CRCerror = false;
 		uint8_t out_datagram[] = {
